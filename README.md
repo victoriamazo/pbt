@@ -16,8 +16,9 @@ set of hyperparameters. Here PBT is applied to training an mnist classifier.
 ```
 git clone https://github.com/victoriamazo/pbt.git
 ```
-- Download mnist dataset
-- Download a pretrained vanilla
+- Download [mnist dataset](https://drive.google.com/open?id=1_mOZwOuuMHF7Ihzrrb30RdAfgnOspHQN)
+- Download the best pretrained vanilla model with fully connected layers  
+- Download the best pretrained vanilla model with convolutional layers 
 - Download a pretrained PBT model
 
 ### Vanilla 

@@ -1,7 +1,6 @@
 from collections import OrderedDict
 
 import torch.nn as nn
-from torch.autograd import Variable
 
 
 class conv(nn.Module):
@@ -33,6 +32,12 @@ class conv(nn.Module):
         self.classifier = nn.Sequential(nn.Linear(current_dims, self.num_classes))
         # print(self.features)
 
+    def init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
+                nn.init.xavier_uniform(m.weight.data)
+                if m.bias is not None:
+                    m.bias.data.zero_()
 
     def forward(self, input):
         x = self.model.forward(input)

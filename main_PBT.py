@@ -58,7 +58,6 @@ def input_params(args=None):
     config_general = config['general']
     root_dir = config_general['train_dir']
     if config_general['exp_time'] == '':
-        # config_general['exp_time'] = str(time.strftime('%b%d_%H-%M-%S', time.localtime(time.time())))
         config_general['exp_time'] = str(time.strftime('%y%m%b%d_%H-%M-%S', time.localtime(time.time())))
     config_general['train_dir'] = os.path.join(config_general['train_dir'], config_general['exp_time'])
 
@@ -74,7 +73,7 @@ def input_params(args=None):
 
 
 
-def set_cuda_visible_gpus(config, mode, gpu_list_train=None, one_gpu_str=None):
+def set_cuda_visible_gpus(config, mode, one_gpu_str=None):
     if 'gpus' in config and len(config['gpus']) > 0:
         gpus_list = config['gpus']
         gpus_list = list(map(int, gpus_list.split(',')))
@@ -83,9 +82,6 @@ def set_cuda_visible_gpus(config, mode, gpu_list_train=None, one_gpu_str=None):
             os.environ["CUDA_VISIBLE_DEVICES"] = one_gpu_str
             print('running {} on gpu {}'.format(mode, one_gpu_str))
         else:
-            if gpu_list_train != None:
-                for gpu in gpu_list:
-                    assert gpu not in gpu_list_train
             os.environ["CUDA_VISIBLE_DEVICES"] = gpu_list
             print('running {} on gpu(s) {}'.format(mode, gpu_list))
     else:

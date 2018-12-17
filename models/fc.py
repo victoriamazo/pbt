@@ -33,6 +33,14 @@ class fc(nn.Module):
         # print(self.model)
 
 
+    def init_weights(self):
+        for m in self.modules():
+            if isinstance(m, nn.Linear):
+                nn.init.xavier_uniform(m.weight.data)
+                if m.bias is not None:
+                    m.bias.data.zero_()
+
+
     def forward(self, input):
         input = input.view(input.size(0), -1)
         assert input.size(1) == self.input_dims
