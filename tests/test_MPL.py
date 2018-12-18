@@ -70,7 +70,7 @@ class test_MPL(Test):
         logits = np.array(list(itertools.chain(*x)))
         y = np.array(list(itertools.chain(*y)))
         test_acc = Metric.metric_builder(self.metric, logits, y, self.FLAGS)
-        print('\t\t\tTest (epoch {}, iter {}): Average loss: {:.4f}, Accuracy: {:.2f}%'.format(self.epoch, self.n_iter,
+        print('\t\t\tTest (epoch {}, iter {}): Average loss: {:.4f}, Accuracy: {:.2f}%'.format(self.n_epoch, self.n_iter,
                                                                                                losses.avg[0], test_acc))
         return losses.avg[0], test_acc
 
@@ -79,7 +79,7 @@ class test_MPL(Test):
         self._check_args()
 
         # load models and weights
-        models_loaded, models, model_names, self.n_iter, self.epoch = load_model_and_weights(self.load_ckpt,
+        models_loaded, models, model_names, self.n_iter, self.n_epoch = load_model_and_weights(self.load_ckpt,
                                     self.FLAGS, use_cuda, model=self.model, ckpts_dir=self.ckpts_dir, train=False,
                                     worker_num=self.worker_num)
         model = models[0]
@@ -91,12 +91,12 @@ class test_MPL(Test):
             # save test losses and metrics to results table
             col_names = ['test_loss', 'test_acc']
             values = [test_loss, test_acc]
-            save_loss_to_resultstable(values, col_names, self.results_table_path, self.n_iter, self.epoch, self.debug)
+            save_loss_to_resultstable(values, col_names, self.results_table_path, self.n_iter, self.n_epoch, self.debug)
 
             # check if best model (saves best model not in debug mode)
             save_path = os.path.join(self.train_dir, 'ckpts')
             check_if_best_model_and_save(self.results_table_path, models, model_names, self.n_iter,
-                                         self.epoch, save_path, self.debug, self.worker_num)
+                                         self.n_epoch, save_path, self.debug, self.worker_num)
         else:
             print('no ckpt found for running test')
 

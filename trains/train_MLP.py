@@ -33,6 +33,7 @@ class train_MPL(Train):
         self.test_iters_dict = {}
         self.debug = FLAGS.debug
         if self.worker_num != None:
+            self.n_epoch = FLAGS.n_epoch
             self.writer = None
             self.results_table_path = os.path.join(self.train_dir, 'results_{}.csv'.format(self.worker_num))
             self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary_{}.csv'.format(self.worker_num))
@@ -128,8 +129,9 @@ class train_MPL(Train):
 
         # run training for n epochs
         for epoch in range(self.n_epoch, self.num_epochs, 1):
-            self.n_epoch = epoch
-            if self.n_epoch in self.decreasing_lr_epochs:
+            if self.worker_num == None:
+                self.n_epoch = epoch
+            if self.n_epoch in self.decreasing_lr_epochs and self.worker_num != None:
                 idx = self.decreasing_lr_epochs.index(self.n_epoch) + 1
                 self.lr /= 2**idx
                 print('learning rate decreases by {} at epoch {}'.format(2**idx, self.n_epoch))

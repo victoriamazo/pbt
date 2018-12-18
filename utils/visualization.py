@@ -92,11 +92,13 @@ def w_params_visualization(train_dir, num_workers):
         num_rows_per_worker = int(num_rows / float(num_workers))
 
         # get param names
-        num_params = (num_cols - 4) / 2
+        # num_params = (num_cols - 4) // 2
         param_list = []
         for col in list(history_table):
-            if col != 'worker' and col != 'iter' and col != 'test_acc' and col != 'copied_from_w' and not col.startswith('mutation_'):
+            if col != 'worker' and col != 'epoch' and col != 'iter' and col != 'test_acc' and col != 'copied_from_w' \
+                    and not col.startswith('mutation_'):
                 param_list.append(col)
+        num_params = len(param_list)
         print('num_cols = {}, num_params = {}'.format(num_cols, num_params), 'param_list = ', param_list)
 
         # every worker array will have two params (x, y and accuracy), if there are more params, they will be added
@@ -213,9 +215,12 @@ def visualization_trajectories(pred_poses_tgt, gt_poses_tgt, visualization_paths
 
 
 if __name__ == '__main__':
-    root_dir = '/media/victoria/d/models/mnist'
-    results_visualization(root_dir)
+    # root_dir = '/media/victoria/d/models/mnist'
+    # results_visualization(root_dir)
 
+    train_dir = '/media/victoria/d/models/mnist/1812Dec17_16-23-11'
+    num_workers = 10
+    w_params_visualization(train_dir, num_workers)
 
 
 

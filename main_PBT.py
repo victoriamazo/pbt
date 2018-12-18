@@ -97,7 +97,7 @@ def set_cuda_visible_gpus(config, mode, one_gpu_str=None):
     return gpu_list
 
 
-def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT_params_worker):
+def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT_params_worker, epoch):
     # read and rank accuracies of all workers
     results_dict = {}
     test_iter = 0
@@ -129,7 +129,7 @@ def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT
     history_path = os.path.join(train_dir, 'history.csv')
     row_idx = 0
     if not os.path.isfile(history_path):
-        columns = ['worker', 'iter', 'test_acc']
+        columns = ['worker', 'epoch', 'iter', 'test_acc']
         index = np.arange(1)
         history_table = pd.DataFrame(columns=columns, index=index)
         for param, value in PBT_params.items():
@@ -140,6 +140,7 @@ def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT
             row_idx = len(history_table.index)
     for w in range(num_workers):
         history_table.ix[row_idx, 'worker'] = w
+        history_table.ix[row_idx, 'epoch'] = epoch
         history_table.ix[row_idx, 'iter'] = test_iter
         history_table.ix[row_idx, 'test_acc'] = results_dict[str(w)]
         for param, value in PBT_params_worker.items():
@@ -240,6 +241,9 @@ def main(args=None):
                         # resume training from previous ckpt
                         config_train['load_ckpt'] = 'latest_{}'.format(w)
 
+                # add current epoch number to config
+                config_train['n_epoch'] = epoch_loop_num * config_train['num_epochs']
+
                 # start train process
                 config_train['worker_num'] = w
                 print('started training worker {}'.format(w))
@@ -271,7 +275,7 @@ def main(args=None):
         # read and rank accuracies of all workers and copy hyperparams and accuracies to history.csv
         best_20perc_workers, worst_20perc_workers, workers_sorted = \
             read_accuracies_and_fill_history_csv(config_train['train_dir'], num_workers, PBT_params,
-                                                 PBT_params_worker)
+                                                 PBT_params_worker, config_train['n_epoch'])
 
     # delete copied ckpts
     ckpt_dir = os.path.join(config_train['train_dir'], 'ckpts')
