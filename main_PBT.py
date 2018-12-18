@@ -1,6 +1,6 @@
 '''
 Main allows to run Population Based Training (PBT), where trainings and tests run as separate processes.
-Configuration should be specified in json file, given as an argument.
+Configuration should be specified in the config json file, given as an argument.
 
 Required to update bashrc (once):
             $ nano ~/.bashrc
@@ -39,6 +39,7 @@ from utils.visualization import w_params_visualization
 def getArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('config', metavar='DIR', help="(required) Path to config file")
+    parser.add_argument('-m', '--mode', type=str, default='', help="(optional) 'test'")
     parser.add_argument('--debug', action='store_true', help='Deactivation of tensorboard and csv writers for debugging')
     args = parser.parse_args()
     return args
@@ -48,11 +49,13 @@ def input_params(args=None):
     # get args, check them and write them to json file
     if args is None:
         args = getArgs()
+    mode = 'PBT_training'
+    if args.mode != '':
+        mode = args.mode
     debug = False
     if args.debug:
         debug = True
     config_filename = args.config
-    mode = 'PBT_training'
 
     present_dir = os.getcwd()
     config_path = os.path.join(present_dir, config_filename)
@@ -95,6 +98,102 @@ def set_cuda_visible_gpus(config, mode, one_gpu_str=None):
         gpu_list = []
         print('running {} on cpu'.format(mode))
     return gpu_list
+
+
+def run_one_epoch(PBT_params, PBT_params_worker, num_workers, config_train, config_test, worst_20perc_workers,
+                  best_20perc_workers, epoch_loop_num, num_worker_loops):
+    # initiate some fields in PBT_params dictionary
+    for param, value in PBT_params.items():
+        PBT_params_worker['mutation_{}'.format(param)] = (-1) * np.ones(num_workers)
+    PBT_params_worker['copied_from_w'] = (-1) * np.ones(num_workers)
+    num_workers_paral = int(config_train['num_workers_paral'])
+    gpus_list = list(map(int, config_train['gpus'].split(',')))
+    gpus_list_paral = gpus_list * int(math.ceil(num_workers_paral / float(len(gpus_list))))
+    w = 0
+    for worker_loop_num in range(num_worker_loops):
+        for worker_paral in range(num_workers_paral):
+            print('\nepoch_loop_num = {}, w = {}, worker_loop_num = {}, worker_paral = {}'.format(
+                epoch_loop_num, w, worker_loop_num, worker_paral))
+
+            if epoch_loop_num == 0:
+                # rand initial params
+                for param, value in PBT_params.items():
+                    assert len(value) > 1
+                    if len(value) == 2:
+                        val = np.random.uniform(value[0], value[1])
+                    else:
+                        idx = np.random.randint(0, len(value))
+                        val = value[idx]
+                    config_train[param] = val
+                    PBT_params_worker[str(param)][w] = val
+            else:
+                # copy all checkpoints
+                ckpt_dir = os.path.join(config_train['train_dir'], 'ckpts')
+                for filename in os.listdir(ckpt_dir):
+                    if filename.startswith('latest_'):
+                        src = os.path.join(ckpt_dir, filename)
+                        ww = (filename.split('.')[0]).split('_')[-1]
+                        dest = os.path.join(ckpt_dir, 'latestcopy_{}.pth'.format(ww))
+                        if os.path.isfile(dest):
+                            os.remove(dest)
+                        shutil.copy(src, dest)
+
+                # truncation selection (copy weights and params of best 20% workers randomly to worst 20% workers)
+                assert best_20perc_workers != None and worst_20perc_workers != None
+                if w in worst_20perc_workers:
+                    rand_idx = np.random.randint(0, len(best_20perc_workers))
+                    worker_to_copy_from = best_20perc_workers[rand_idx]
+                    PBT_params_worker['copied_from_w'][w] = worker_to_copy_from
+                    print('w = {}, best_20perc_workers = {}, worker_to_copy_from = {}'.format(
+                        w, best_20perc_workers, worker_to_copy_from))
+                    mutation = [float(val) for val in config_train['mutation'].split(',')]
+                    for param, value in PBT_params.items():
+                        rand_idx = np.random.randint(0, len(mutation))
+                        mutation_rand = mutation[rand_idx]
+                        val = float(PBT_params_worker[str(param)][worker_to_copy_from] * mutation_rand)
+                        if param == 'keep_prob':
+                            val = min(val, 1.0)
+                            val = max(val, 0.0)
+                        config_train[param] = val
+                        # print 'worst20%: w = {}, param = {}, value = {}'.format(w, param, val)
+                        PBT_params_worker[str(param)][w] = val
+                        PBT_params_worker['mutation_{}'.format(param)][w] = mutation_rand
+                    # resume training from the ckpt of the best worker
+                    config_train['load_ckpt'] = 'latest_{}'.format(worker_to_copy_from)
+                else:
+                    # resume training from previous ckpt
+                    config_train['load_ckpt'] = 'latest_{}'.format(w)
+
+            # add current epoch number to config
+            config_train['n_epoch'] = epoch_loop_num * config_train['num_epochs']
+
+            # start train process
+            config_train['worker_num'] = w
+            print('started training worker {}'.format(w))
+            set_cuda_visible_gpus(config_train, 'train', one_gpu_str=str(gpus_list_paral[worker_paral]))
+            train_process = multiprocessing.Process(target=Train.train_builder, args=(Namespace(**config_train),),
+                                                    name='train_{}'.format(w))
+            train_process.start()
+            w += 1
+
+        train_process.join()
+        print('worker loop {} for epoch_loop {} finished'.format(worker_loop_num, epoch_loop_num))
+        sleep(5)
+
+        # run parallel tests for all workers
+        w = 0
+        for worker_loop_num in range(num_worker_loops):
+            for worker_paral in range(num_workers_paral):
+                print('started test worker {}'.format(w))
+                config_test['worker_num'] = w
+                set_cuda_visible_gpus(config_test, 'test', one_gpu_str=str(gpus_list_paral[worker_paral]))
+                test_process = multiprocessing.Process(target=Test.test_builder, args=(Namespace(**config_test),),
+                                                       name='test_{}'.format(w))
+                test_process.start()
+                w += 1
+            test_process.join()
+        print('test for epoch_loop {} finished'.format(epoch_loop_num))
+        sleep(5)
 
 
 def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT_params_worker, epoch):
@@ -159,133 +258,62 @@ def main(args=None):
     # input parameters (dictionary)
     config_train, config_test, config_val, mode, root_dir = input_params(args=args)
 
-    # dict of PBO params ranges
-    PBT_params = {}
-    for param, value in config_train.items():
-        if param.startswith('PBT'):
-            PBT_params[str(param[4:])] = [float(val) for val in value.split(',')]
+    if mode == 'PBT_training':
+        # dict of PBO params ranges
+        PBT_params = {}
+        for param, value in config_train.items():
+            if param.startswith('PBT'):
+                PBT_params[str(param[4:])] = [float(val) for val in value.split(',')]
 
-    num_workers = int(config_train['num_worker_tot'])
-    num_workers_paral = int(config_train['num_workers_paral'])
-    assert num_workers_paral <= num_workers
-    num_epoch_loops = int(math.ceil(int(config_train['num_epochs_tot']) / float(config_train['num_epochs'])))
-    num_worker_loops = int(math.ceil(num_workers / float(num_workers_paral)))
-    gpus_list = list(map(int, config_train['gpus'].split(',')))
-    gpus_list_paral = gpus_list * int(math.ceil(num_workers_paral/float(len(gpus_list))))
-    PBT_params_worker = {}                    # key - param name, value - list of param values for each worker
-    for param, value in PBT_params.items():
-        PBT_params_worker[str(param)] = np.zeros(num_workers)
-        PBT_params_worker['mutation_{}'.format(param)] = (-1) * np.ones(num_workers)
-    PBT_params_worker['copied_from_w'] = (-1) * np.ones(num_workers)
+        num_workers = int(config_train['num_worker_tot'])
+        num_workers_paral = int(config_train['num_workers_paral'])
+        assert num_workers_paral <= num_workers
+        num_epoch_loops = int(math.ceil(int(config_train['num_epochs_tot']) / float(config_train['num_epochs'])))
+        num_worker_loops = int(math.ceil(num_workers / float(num_workers_paral)))
 
-    # run parallel training 'num_epochs_tot/num_epochs' times
-    for epoch_loop_num in range(num_epoch_loops):
-        # initiate some fields in PBT_params dictionary
+        PBT_params_worker = {}                    # key - param name, value - list of param values for each worker
         for param, value in PBT_params.items():
+            PBT_params_worker[str(param)] = np.zeros(num_workers)
             PBT_params_worker['mutation_{}'.format(param)] = (-1) * np.ones(num_workers)
         PBT_params_worker['copied_from_w'] = (-1) * np.ones(num_workers)
 
-        w = 0
-        for worker_loop_num in range(num_worker_loops):
-            for worker_paral in range(num_workers_paral):
-                print('\nepoch_loop_num = {}, w = {}, worker_loop_num = {}, worker_paral = {}'.format(
-                    epoch_loop_num, w, worker_loop_num, worker_paral))
+        # run parallel training 'num_epochs_tot/num_epochs' times
+        worst_20perc_workers, best_20perc_workers = -1, -1
+        for epoch_loop_num in range(num_epoch_loops):
+            run_one_epoch(PBT_params, PBT_params_worker, num_workers, config_train, config_test, worst_20perc_workers,
+                                        best_20perc_workers, epoch_loop_num, num_worker_loops)
+            # read and rank accuracies of all workers and copy hyperparams and accuracies to history.csv
+            best_20perc_workers, worst_20perc_workers, workers_sorted = \
+                read_accuracies_and_fill_history_csv(config_train['train_dir'], num_workers, PBT_params,
+                                                     PBT_params_worker, config_train['n_epoch'])
 
-                if epoch_loop_num == 0:
-                    # rand initial params
-                    for param, value in PBT_params.items():
-                        assert len(value) > 1
-                        if len(value) == 2:
-                            val = np.random.uniform(value[0], value[1])
-                        else:
-                            idx = np.random.randint(0, len(value))
-                            val = value[idx]
-                        config_train[param] = val
-                        PBT_params_worker[str(param)][w] = val
-                        # print 'param = {}, value = {}'.format(param, config_train[param])
-                else:
-                    # copy all checkpoints
-                    ckpt_dir = os.path.join(config_train['train_dir'], 'ckpts')
-                    for filename in os.listdir(ckpt_dir):
-                        if filename.startswith('latest_'):
-                            src = os.path.join(ckpt_dir, filename)
-                            ww = (filename.split('.')[0]).split('_')[-1]
-                            dest = os.path.join(ckpt_dir, 'latestcopy_{}.pth'.format(ww))
-                            if os.path.isfile(dest):
-                                os.remove(dest)
-                            shutil.copy(src, dest)
+        # delete copied ckpts
+        ckpt_dir = os.path.join(config_train['train_dir'], 'ckpts')
+        for filename in os.listdir(ckpt_dir):
+            if filename.startswith('latestcopy'):
+                file = os.path.join(ckpt_dir, filename)
+                os.remove(file)
 
-                    # truncation selection (copy weights and params of best 20% workers randomly to worst 20% workers)
-                    assert best_20perc_workers != None and worst_20perc_workers != None
-                    if w in worst_20perc_workers:
-                        rand_idx = np.random.randint(0, len(best_20perc_workers))
-                        worker_to_copy_from = best_20perc_workers[rand_idx]
-                        PBT_params_worker['copied_from_w'][w] = worker_to_copy_from
-                        print('w = {}, best_20perc_workers = {}, worker_to_copy_from = {}'.format(
-                            w, best_20perc_workers, worker_to_copy_from))
-                        mutation = [float(val) for val in config_train['mutation'].split(',')]
-                        for param, value in PBT_params.items():
-                            rand_idx = np.random.randint(0, len(mutation))
-                            mutation_rand = mutation[rand_idx]
-                            val = float(PBT_params_worker[str(param)][worker_to_copy_from] * mutation_rand)
-                            if param == 'keep_prob':
-                                val = min(val, 1.0)
-                                val = max(val, 0.0)
-                            config_train[param] = val
-                            # print 'worst20%: w = {}, param = {}, value = {}'.format(w, param, val)
-                            PBT_params_worker[str(param)][w] = val
-                            PBT_params_worker['mutation_{}'.format(param)][w] = mutation_rand
-                        # resume training from the ckpt of the best worker
-                        config_train['load_ckpt'] = 'latest_{}'.format(worker_to_copy_from)
-                    else:
-                        # resume training from previous ckpt
-                        config_train['load_ckpt'] = 'latest_{}'.format(w)
+        # visualization
+        w_params_visualization(config_train['train_dir'], num_workers)
 
-                # add current epoch number to config
-                config_train['n_epoch'] = epoch_loop_num * config_train['num_epochs']
+    elif mode == 'test':
+        load_ckpt = config_test['load_ckpt']
+        train_dir = "/".join(load_ckpt.split("/")[:-2])
+        worker_num = ((load_ckpt.split("/")[-1]).split('.')[0]).split('_')[-1]
+        config_test_path = os.path.join(train_dir, 'args_test_{}.json'.format(worker_num))
+        if os.path.isfile(config_test_path):
+            with open(config_test_path, 'rt') as r:
+                config_test = json.load(r)
+            print('loaded test config from {}'.format(config_test_path))
+        config_test['train_dir'] = train_dir
+        config_test['load_ckpt'] = load_ckpt
+        if 'gpus' in config_test:
+            set_cuda_visible_gpus(config_test, 'test')
+        Test.test_builder(Namespace(**config_test), )
 
-                # start train process
-                config_train['worker_num'] = w
-                print('started training worker {}'.format(w))
-                set_cuda_visible_gpus(config_train, 'train', one_gpu_str=str(gpus_list_paral[worker_paral]))
-                train_process = multiprocessing.Process(target=Train.train_builder, args=(Namespace(**config_train), ),
-                                                        name='train_{}'.format(w))
-                train_process.start()
-                w += 1
-
-            train_process.join()
-            print('worker loop {} for epoch_loop {} finished'.format(worker_loop_num, epoch_loop_num))
-        sleep(5)
-
-        # run parallel tests for all workers
-        w = 0
-        for worker_loop_num in range(num_worker_loops):
-            for worker_paral in range(num_workers_paral):
-                print('started test worker {}'.format(w))
-                config_test['worker_num'] = w
-                set_cuda_visible_gpus(config_test, 'test', one_gpu_str=str(gpus_list_paral[worker_paral]))
-                test_process = multiprocessing.Process(target=Test.test_builder, args=(Namespace(**config_test),),
-                                                       name='test_{}'.format(w))
-                test_process.start()
-                w += 1
-            test_process.join()
-        print('test for epoch_loop {} finished'.format(epoch_loop_num))
-        sleep(5)
-
-        # read and rank accuracies of all workers and copy hyperparams and accuracies to history.csv
-        best_20perc_workers, worst_20perc_workers, workers_sorted = \
-            read_accuracies_and_fill_history_csv(config_train['train_dir'], num_workers, PBT_params,
-                                                 PBT_params_worker, config_train['n_epoch'])
-
-    # delete copied ckpts
-    ckpt_dir = os.path.join(config_train['train_dir'], 'ckpts')
-    for filename in os.listdir(ckpt_dir):
-        if filename.startswith('latestcopy'):
-            file = os.path.join(ckpt_dir, filename)
-            os.remove(file)
-
-    # visualization
-    w_params_visualization(config_train['train_dir'], num_workers)
+    else:
+        'no correct mode given as input'
 
 
 

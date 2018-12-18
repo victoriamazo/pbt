@@ -174,7 +174,7 @@ def load_model_and_weights(load_ckpt, FLAGS, use_cuda, model='conv', worker_num=
     return model_loaded, models, model_names, n_iter, n_epoch
 
 
-def save_test_losses_to_tensorboard(test_iters_dict, results_table_path, writer, debug=False):
+def save_test_losses_to_tensorboard(test_iters_dict, results_table_path, writer=None, woker_num=None, debug=False):
     ''' Get test loss from the results_table and add them to tensorboard'''
     filename = (results_table_path.split('/')[-1]).split('.')[0]
     results_table_path_tmp = Path(results_table_path).dirname() / '{}_tmp.csv'.format(filename)
@@ -189,7 +189,11 @@ def save_test_losses_to_tensorboard(test_iters_dict, results_table_path, writer,
                     test_iters_dict[test_iter] = 1
                     if not debug and writer is not None:
                         for col_name in col_names:
-                            writer.add_scalar(col_name+'_test',  results_table.iloc[row_idx][col_name], test_iter)
+                            if woker_num != None:
+                                writer.add_scalar(col_name+'_test_{}'.format(woker_num),
+                                                  results_table.iloc[row_idx][col_name], test_iter)
+                            else:
+                                writer.add_scalar(col_name+'_test',  results_table.iloc[row_idx][col_name], test_iter)
 
         if os.path.isfile(results_table_path_tmp):
             os.remove(results_table_path_tmp)

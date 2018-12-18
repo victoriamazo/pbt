@@ -32,14 +32,13 @@ class train_MPL(Train):
         self.n_epoch = 0
         self.test_iters_dict = {}
         self.debug = FLAGS.debug
+        save_path = os.path.join('tensorboard', self.train_dir.split('/')[-1])
+        self.writer = SummaryWriter(save_path)
         if self.worker_num != None:
             self.n_epoch = FLAGS.n_epoch
-            self.writer = None
             self.results_table_path = os.path.join(self.train_dir, 'results_{}.csv'.format(self.worker_num))
             self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary_{}.csv'.format(self.worker_num))
         else:
-            save_path = os.path.join('tensorboard', self.train_dir.split('/')[-1])
-            self.writer = SummaryWriter(save_path)
             self.results_table_path = os.path.join(self.train_dir, 'results.csv')
             self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary.csv')
 
@@ -92,10 +91,13 @@ class train_MPL(Train):
                 if self.worker_num == None:
                     self.writer.add_scalar('loss', losses.avg[0], self.n_iter)
                     self.writer.add_scalar('train_accuracy', acc, self.n_iter)
+                else:
+                    self.writer.add_scalar('loss_{}'.format(self.worker_num), losses.avg[0], self.n_epoch)
+                    self.writer.add_scalar('lr_{}'.format(self.worker_num), self.lr, self.n_epoch)
 
                 # save test losses to tensorboard and results_table.csv
                 self.test_iters_dict = save_test_losses_to_tensorboard(self.test_iters_dict, self.results_table_path,
-                                                                       self.writer, self.debug)
+                                                                       self.writer, self.worker_num, self.debug)
                 # save checkpoint
                 states = [{'iteration': self.n_iter, 'epoch': self.n_epoch, 'state_dict': model.module.state_dict()}]
                 save_checkpoint(self.ckpts_dir, states, ['model'], worker_num=self.worker_num)
