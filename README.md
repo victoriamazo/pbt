@@ -17,15 +17,18 @@ set of hyperparameters. Here PBT is applied to training an mnist classifier.
 git clone https://github.com/victoriamazo/pbt.git
 ```
 - Download [mnist dataset](https://drive.google.com/open?id=1_mOZwOuuMHF7Ihzrrb30RdAfgnOspHQN)
-- Download the best pretrained vanilla model with fully connected layers  
+- Download the best pretrained vanilla model with fully connected layers 
+[here](https://drive.google.com/open?id=1owLOz0mOvmKB64N05q6OVhwdVl4dn7YE) 
 - Download the best pretrained vanilla model with convolutional layers 
-- Download a pretrained PBT model
+[here](https://drive.google.com/open?id=1Qg2yXcNb07k2aAcRNaWygI8XJeSjMtxT)
+- Download a pretrained PBT model with fully connected layers  [here]()
+- Download a pretrained PBT model with convolutional layers  [here]()
 
 ### Vanilla 
-For a vanilla (without PBT) training and/or testing edit the parameters in the corresponding 
+For a vanilla (without PBT) training and/or testing edit the parameters ("data_dir", "train_dir") in the corresponding 
 config file (*config/fc.json* for a fully-connected and *config/conv.json* for a convolutional network) 
 and run
-- testing
+- testing (update in the config file "load_ckpt" (in the test section) with a full path to a saved model)
 ```
 python3 main.py config/conv.json -m test
 ```
@@ -37,9 +40,10 @@ python3 main.py config/conv.json -m train
 ```
 python3 main.py config/conv.json 
 ```
-To resume training in a config file update the training directory "train_dir", where a pretrained model 
-is located in the training directory, write the last iteration in the "load_ckpt_iter" in the 
-"train" subsection.
+To resume training, update in the config file "load_ckpt" (in the train section) with a full 
+path to a saved model.
+
+
 
 ### PBT 
 For a PBT training and testing as parallel threads (testing will be run every several epochs, as defined in 

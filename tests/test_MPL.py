@@ -23,8 +23,12 @@ class test_MPL(Test):
         self.width = FLAGS.width
         self.metric = FLAGS.metric
         self.model = FLAGS.model
-        self.load_ckpt = FLAGS.load_ckpt
         self.results_table_path = os.path.join(self.train_dir, 'results.csv')
+        if self.worker_num != None:
+            self.results_table_path = os.path.join(self.train_dir, 'results_{}.csv'.format(self.worker_num))
+        else:
+            self.results_table_path = os.path.join(self.train_dir, 'results.csv')
+
         if hasattr(FLAGS, 'seed'):
             self.seed = FLAGS.seed
         torch.manual_seed(self.seed)
@@ -76,7 +80,8 @@ class test_MPL(Test):
 
         # load models and weights
         models_loaded, models, model_names, self.n_iter, self.epoch = load_model_and_weights(self.load_ckpt,
-                                    self.FLAGS, use_cuda, model=self.model, ckpts_dir=self.ckpts_dir, train=False)
+                                    self.FLAGS, use_cuda, model=self.model, ckpts_dir=self.ckpts_dir, train=False,
+                                    worker_num=self.worker_num)
         model = models[0]
 
         if models_loaded:

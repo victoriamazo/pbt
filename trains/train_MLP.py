@@ -23,29 +23,24 @@ class train_MPL(Train):
         self.height = FLAGS.height
         self.width = FLAGS.width
         self.model = FLAGS.model
-        if len(FLAGS.decreasing_lr_epochs) > 0:
+        self.decreasing_lr_epochs = []
+        if hasattr(FLAGS, 'decreasing_lr_epochs') and len(FLAGS.decreasing_lr_epochs) > 0:
             self.decreasing_lr_epochs = list(map(int, FLAGS.decreasing_lr_epochs.split(',')))
-        else:
-            self.decreasing_lr_epochs = None
         self.metric = FLAGS.metric
         self.weight_decay = FLAGS.weight_decay
         self.n_iter = 0
         self.n_epoch = 0
         self.test_iters_dict = {}
-        self.results_table_path = os.path.join(self.train_dir, 'results.csv')
-        self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary.csv')
         self.debug = FLAGS.debug
-        self.load_ckpt = ''
-        self.rm_train_dir = True
-        if hasattr(FLAGS, 'load_ckpt') and FLAGS.load_ckpt != '':
-            self.load_ckpt = FLAGS.load_ckpt
-            self.rm_train_dir = False
         if self.worker_num != None:
-            self.rm_train_dir = False
             self.writer = None
+            self.results_table_path = os.path.join(self.train_dir, 'results_{}.csv'.format(self.worker_num))
+            self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary_{}.csv'.format(self.worker_num))
         else:
             save_path = os.path.join('tensorboard', self.train_dir.split('/')[-1])
             self.writer = SummaryWriter(save_path)
+            self.results_table_path = os.path.join(self.train_dir, 'results.csv')
+            self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary.csv')
 
         # seed
         if hasattr(FLAGS, 'seed'):
@@ -115,7 +110,7 @@ class train_MPL(Train):
 
 
     def build(self):
-        self._check_args(self.rm_train_dir)
+        self._check_args()
 
         # initialize or resume training
         _, models, _, self.n_iter, self.n_epoch = load_model_and_weights(self.load_ckpt, self.FLAGS, use_cuda,

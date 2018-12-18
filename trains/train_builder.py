@@ -20,17 +20,15 @@ class Train(object):
         self.gpus = list(map(int, FLAGS.gpus.split(',')))
         self.ckpts_dir = os.path.join(self.train_dir, 'ckpts')
         self.load_ckpt = ''
-        if hasattr(FLAGS, 'load_ckpt') and FLAGS.load_ckpt != '':
+        if hasattr(FLAGS, 'load_ckpt'):
             self.load_ckpt = FLAGS.load_ckpt
+        self.worker_num = None
         if hasattr(FLAGS, 'worker_num'):
             self.worker_num = int(FLAGS.worker_num)
-        else:
-            self.worker_num = None
 
 
-    def _check_args(self, rm_train_dir):
+    def _check_args(self):
         assert os.path.isdir(self.data_dir), 'correct data_dir field is required'
-        # ensure_dir(self.train_dir, erase=rm_train_dir)
         ensure_dir(self.ckpts_dir, erase=False)
         print('\nArguments: ')
         for arg in vars(self.FLAGS):

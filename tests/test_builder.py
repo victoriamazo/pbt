@@ -14,12 +14,11 @@ class Test(object):
         self.gpus = FLAGS.gpus
         self.ckpts_dir = os.path.join(self.train_dir, 'ckpts')
         self.load_ckpt = ''
-        if hasattr(FLAGS, 'load_ckpt') and FLAGS.load_ckpt != '':
+        if hasattr(FLAGS, 'load_ckpt'):
             self.load_ckpt = FLAGS.load_ckpt
+        self.worker_num = None
         if hasattr(FLAGS, 'worker_num'):
             self.worker_num = int(FLAGS.worker_num)
-        else:
-            self.worker_num = None
         self.debug = FLAGS.debug
 
 

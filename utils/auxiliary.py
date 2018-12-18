@@ -69,7 +69,8 @@ def check_if_best_model_and_save(results_table_path, models, model_names, iter, 
         The decision is made based according to 'best_criteria', which should be a
         name of column in the results table.
         If best, save the ckpt as best (not in debug mode).'''
-    results_table_path_tmp = Path(results_table_path).dirname()/'results_tmp.csv'
+    filename = (results_table_path.split('/')[-1]).split('.')[0]
+    results_table_path_tmp = Path(results_table_path).dirname() / '{}_tmp.csv'.format(filename)
 
     # check whether 'iter' is the best iteration according to the best criteria
     is_best = False
@@ -174,8 +175,9 @@ def load_model_and_weights(load_ckpt, FLAGS, use_cuda, model='conv', worker_num=
 
 
 def save_test_losses_to_tensorboard(test_iters_dict, results_table_path, writer, debug=False):
-    ''' Get test losses from the results_table and add them to tensorboard'''
-    results_table_path_tmp = Path(results_table_path).dirname() / 'results_tmp.csv'
+    ''' Get test loss from the results_table and add them to tensorboard'''
+    filename = (results_table_path.split('/')[-1]).split('.')[0]
+    results_table_path_tmp = Path(results_table_path).dirname() / '{}_tmp.csv'.format(filename)
     if os.path.isfile(results_table_path):
         copyfile(results_table_path, results_table_path_tmp)
         results_table = pd.read_csv(results_table_path_tmp, index_col=0)
@@ -233,7 +235,8 @@ def write_summary_to_csv(loss_summary_path, results_table_path, n_iter, epoch, t
 
     # get test loss for current iteration
     test_loss = -1
-    results_table_path_tmp = Path(results_table_path).dirname() / 'results_tmp.csv'
+    filename = (results_table_path.split('/')[-1]).split('.')[0]
+    results_table_path_tmp = Path(results_table_path).dirname() / '{}_tmp.csv'.format(filename)
     if os.path.isfile(results_table_path):
         copyfile(results_table_path, results_table_path_tmp)
         results_table = pd.read_csv(results_table_path_tmp, index_col=0)

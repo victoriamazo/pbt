@@ -10,6 +10,8 @@ Required to update bashrc (once):
 Example:
 trains and tests (PBT):
 config/mnist/test_PBT.json
+
+by adding '--debug', no tensorboard and other writer will start (for debug mode)
 '''
 
 
@@ -34,20 +36,21 @@ from tests.test_builder import Test
 from utils.visualization import w_params_visualization
 
 
-
-
 def getArgs():
     parser = argparse.ArgumentParser()
     parser.add_argument('config', metavar='DIR', help="(required) Path to config file")
+    parser.add_argument('--debug', action='store_true', help='Deactivation of tensorboard and csv writers for debugging')
     args = parser.parse_args()
     return args
-
 
 
 def input_params(args=None):
     # get args, check them and write them to json file
     if args is None:
         args = getArgs()
+    debug = False
+    if args.debug:
+        debug = True
     config_filename = args.config
     mode = 'PBT_training'
 
@@ -57,9 +60,8 @@ def input_params(args=None):
         config = json.load(r)
     config_general = config['general']
     root_dir = config_general['train_dir']
-    if config_general['exp_time'] == '':
-        config_general['exp_time'] = str(time.strftime('%y%m%b%d_%H-%M-%S', time.localtime(time.time())))
-    config_general['train_dir'] = os.path.join(config_general['train_dir'], config_general['exp_time'])
+    exp_time = str(time.strftime('%y%m%b%d_%H-%M-%S', time.localtime(time.time())))
+    config_general['train_dir'] = os.path.join(config_general['train_dir'], exp_time)
 
     config_train = config['train']
     config_train.update(config_general)
@@ -69,8 +71,12 @@ def input_params(args=None):
     if 'val' in config:
         config_val = config['val']
         config_val.update(config_general)
-    return config_train, config_test, config_val, mode, root_dir
 
+    config_train['debug'] = debug
+    config_test['debug'] = debug
+    if 'val' in config:
+        config_val['debug'] = debug
+    return config_train, config_test, config_val, mode, root_dir
 
 
 def set_cuda_visible_gpus(config, mode, one_gpu_str=None):
@@ -89,7 +95,6 @@ def set_cuda_visible_gpus(config, mode, one_gpu_str=None):
         gpu_list = []
         print('running {} on cpu'.format(mode))
     return gpu_list
-
 
 
 def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT_params_worker):
@@ -147,14 +152,13 @@ def read_accuracies_and_fill_history_csv(train_dir, num_workers, PBT_params, PBT
     return best_20perc_workers, worst_20perc_workers, workers_sorted
 
 
-
 def main(args=None):
     print('running PBT training')
 
     # input parameters (dictionary)
     config_train, config_test, config_val, mode, root_dir = input_params(args=args)
 
-    # dict of PBO params range
+    # dict of PBO params ranges
     PBT_params = {}
     for param, value in config_train.items():
         if param.startswith('PBT'):
@@ -191,9 +195,9 @@ def main(args=None):
                     for param, value in PBT_params.items():
                         assert len(value) > 1
                         if len(value) == 2:
-                            val = np.random.uniform(value[0], value[1])  #random.uniform(value[0], value[1])
+                            val = np.random.uniform(value[0], value[1])
                         else:
-                            idx = np.random.randint(0, len(value))   #random.randint(0, len(value))
+                            idx = np.random.randint(0, len(value))
                             val = value[idx]
                         config_train[param] = val
                         PBT_params_worker[str(param)][w] = val

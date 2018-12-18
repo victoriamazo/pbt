@@ -129,60 +129,6 @@ def input_params(args=None):
         # load ckpt from the latest created train_dir
         root_dir = "/".join(config_general['train_dir'].split("/")[:-1])
         config_test['train_dir'] = sorted(glob.glob(os.path.join(root_dir, '*/')), key=os.path.getmtime)[-1]
-    # # create name for current training dir (incl. time and description) if training
-    # if mode == '' or mode == 'train' or mode == 'traintest':
-    #     exp_time = str(time.strftime('%y%m%b%d_%H-%M-%S', time.localtime(time.time())))
-    #     if 'exp_description' in config_train:
-    #         config_name = (config_filename.split('/')[-1]).split('.')[0]
-    #         exp_time += '_' + config_name
-    #         for item in config_train['exp_description'].split(','):
-    #             exp_time += '_' + str(item)[0] + str(config_train[str(item)])
-    #     # if resume training, train_dir and all parameters should stay the same for train and test
-    #     if 'load_ckpt' in config_train and config_train['load_ckpt'] != '':
-    #         config_train_dir['load_ckpt'] = config_train['load_ckpt']
-    #         if 'load_ckpt_disp' in config_train:
-    #             config_train_dir['load_ckpt_disp'] = config_train['load_ckpt_disp']
-    #         config_general['train_dir'] = "/".join((config_train['load_ckpt']).split("/")[:-2])
-    #         config_train_path = os.path.join(config_general['train_dir'], 'args_train.json')
-    #         if os.path.isfile(config_train_path):
-    #             with open(config_train_path, 'rt') as r:
-    #                 config_train = json.load(r)
-    #             print('loaded train config from {}'.format(config_train_path))
-    #         config_test_path = os.path.join(config_general['train_dir'], 'args_test.json')
-    #         if os.path.isfile(config_test_path):
-    #             with open(config_test_path, 'rt') as r:
-    #                 config_test = json.load(r)
-    #             print('loaded test config from {}'.format(config_test_path))
-    #     else:
-    #         config_general['train_dir'] = os.path.join(config_general['train_dir'], exp_time)
-    #     config_train_dir['train_dir'] = config_general['train_dir']
-    #     config_train.update(config_train_dir)
-    #     config_test.update(config_train_dir)
-    #     if 'val' in config:
-    #         config_val.update(config_train_dir)
-    #     # if train/test in parallel, ignore loading certain ckpt in test (it will load always the last ckpt)
-    #     config_test['load_ckpt'] = ''
-    #     if 'load_ckpt_disp' in config_test:
-    #         config_test['load_ckpt_disp'] = ''
-    # # if mode is 'test' and no 'load_ckpt' choose latest train_dir and load config
-    # elif 'load_ckpt' in config_test and config_test['load_ckpt'] != '':
-    #     train_dir = "/".join((config_test['load_ckpt']).split("/")[:-2])
-    #     load_ckpt = config_test['load_ckpt']
-    #     if 'load_ckpt_disp' in config_test:
-    #         load_ckpt_disp = config_test['load_ckpt_disp']
-    #     config_test_path = os.path.join(train_dir, 'args_test.json')
-    #     if os.path.isfile(config_test_path):
-    #         with open(config_test_path, 'rt') as r:
-    #             config_test = json.load(r)
-    #         print('loaded test config from {}'.format(config_test_path))
-    #     config_test['train_dir'] = train_dir
-    #     config_test['load_ckpt'] = load_ckpt
-    #     if 'load_ckpt_disp' in config_test:
-    #         config_test['load_ckpt_disp'] = load_ckpt_disp
-    # else:
-    #     # load ckpt from the latest created train_dir
-    #     root_dir = "/".join(config_general['train_dir'].split("/")[:-1])
-    #     config_test['train_dir'] = sorted(glob.glob(os.path.join(root_dir, '*/')), key=os.path.getmtime)[-1]
 
     config_train['debug'] = debug
     config_test['debug'] = debug
