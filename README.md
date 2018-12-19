@@ -14,7 +14,7 @@ Here PBT is applied to training an mnist classifier.
 
 ## Dependencies
 - Python 3
-- PyTorch 0.3
+- PyTorch 1.0
 
 Training and testing were performed on Ununtu 16.04, Cuda 8.0 and two 1080Ti GPUs.
 
@@ -28,13 +28,13 @@ Training and testing were performed on Ununtu 16.04, Cuda 8.0 and two 1080Ti GPU
 git clone https://github.com/victoriamazo/pbt.git
 ```
 - Download [mnist dataset](https://drive.google.com/open?id=1_mOZwOuuMHF7Ihzrrb30RdAfgnOspHQN)
-- Download the best pretrained vanilla model with fully connected layers 
+- Download a pretrained fully connected model 
 [here](https://drive.google.com/open?id=17bDCJRXh8SSupTFdehI1qX5h1AYFD1ec) 
-- Download the best pretrained vanilla model with convolutional layers 
+- Download a pretrained convolutional model 
 [here](https://drive.google.com/open?id=1OzW-Irh_LWbqYvSsDD5FZdvJvKI2-KYq)
-- Download a pretrained PBT model with fully connected layers 
- [here](https://drive.google.com/open?id=1hlULxaPINOqpZoaTIKw83T3EUNdbipty)
-- Download a pretrained PBT model with convolutional layers  
+- Download a pretrained fully connected model trained with PBT 
+[here](https://drive.google.com/open?id=1hlULxaPINOqpZoaTIKw83T3EUNdbipty)
+- Download a pretrained convolutional model trained with PTB 
 [here](https://drive.google.com/open?id=1TcTZr7IxCzarZ-tsV68tWSAhAZ8dul81)
 
 ### Vanilla 

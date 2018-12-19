@@ -28,7 +28,7 @@
   },
   "test": {
     "version": "test_MPL",
-    "load_ckpt": "/media/victoria/d/models/mnist/1812Dec17_14-06-32/ckpts/model_ckpt_best.pth.tar",
+    "load_ckpt": "",
     "batch_size": 1,
     "gpus": "0",
     "sleep_time_sec": 20

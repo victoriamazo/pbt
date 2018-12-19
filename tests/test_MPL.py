@@ -59,7 +59,7 @@ class test_MPL(Test):
             # run test and get predictions
             output = model(data_t)
             loss = F.cross_entropy(output, target_t)
-            losses.update(loss.data[0], self.batch_size)
+            losses.update(loss.data.item(), self.batch_size)
             x.append(output.data.cpu().numpy()[:])
             y.append(target[:])
 

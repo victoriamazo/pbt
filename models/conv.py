@@ -35,7 +35,7 @@ class conv(nn.Module):
     def init_weights(self):
         for m in self.modules():
             if isinstance(m, nn.Conv2d) or isinstance(m, nn.Linear):
-                nn.init.xavier_uniform(m.weight.data)
+                nn.init.xavier_uniform_(m.weight.data)
                 if m.bias is not None:
                     m.bias.data.zero_()
 

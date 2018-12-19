@@ -72,16 +72,16 @@ class train_MPL(Train):
             data_t = Variable(data_t)
             if use_cuda:
                 data_t, target_t = data_t.cuda(), target_t.cuda()
-            if self.worker_num == None:
-                img = ((data[0]-np.min(data[0]))/np.max(data[0]-np.min(data[0]))).astype('float32')
-                img = np.stack((img, img, img), axis=2)
-                self.writer.add_image('train_images', img, i)
+            # if self.worker_num == None:
+            #     img = ((data[0]-np.min(data[0]))/np.max(data[0]-np.min(data[0]))).astype('float32')
+            #     img = np.stack((img, img, img), axis=2)
+            #     self.writer.add_image('train_images', img, i)
 
             # run model, get prediction and backprop error
             optimizer.zero_grad()
             output = model(data_t)
             loss = F.cross_entropy(output, target_t)
-            losses.update(loss.data[0], self.batch_size)
+            losses.update(loss.data.item(), self.batch_size)
 
             # calculate metric and save ckpt
             if self.n_iter % self.num_iters_for_ckpt == 0 and self.n_iter > 0:
