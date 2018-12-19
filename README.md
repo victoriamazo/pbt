@@ -99,5 +99,5 @@ reached highest test accuracy. An interesting conclusion is that the best learni
 rate is around 0.001 and dropout probability value does not really matter.    
 ![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "title-1") 
 
-This is an example of a learning rate schedule vs. epochs.
+This is an example of a learning rate schedule (of one worker) vs. epochs.
 ![alt-text-2](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "title-2") 
