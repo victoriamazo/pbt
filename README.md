@@ -67,6 +67,7 @@ python3 main_PBT.py config/conv_PBT.json
 python3 main_PBT.py config/conv_PBT.json -m test
 ```
 
+
 Configuration parameters:
 - *"PBT_lr"* and *"PBT_keep_prob"* - hyperparameters starting with *PBT* are those,
     which are taken from best performing workers and mutated
