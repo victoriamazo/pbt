@@ -89,9 +89,9 @@ run in parallel first and then the rest of the workers run in parallel.
 *"num_workers_paral"* cannot be greater than *"num_worker_tot"*.
 
 
-## PBT Results
+## Results
 
-In the example of hyperparameter search below (convolutional network) 
+In the example of PBT hyperparameter search below (convolutional network) 
 the search started with random initial 
 parameters (learning rate and keep dropout probability). Workers were trained for 50 epochs
 and after each epoch tests were performed. At the last epoch almost all workers 
