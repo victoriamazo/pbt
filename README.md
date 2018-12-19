@@ -3,7 +3,8 @@
 ## Population Based Training (PBT)  
 Implementation of the paper [Jaderberg et al. "Population Based Training of Neural Networks"](https://arxiv.org/abs/1711.09846) (DeepMind).
 PBT is an automatic method for finding a schedule of hyperparameter settings rather than a single fixed 
-set of hyperparameters. A defined number of workers are trained in parallel for a 
+set of hyperparameters. A defined number of workers are initialized randomly and 
+are trained in parallel for a 
 certain number of epochs, after which tests are performed. 20% of workers with best 
 performance are selected and their weights and hyperparameters are  copied 
 to the worst 20% of workers and they are multiplied by a random mutation factor. 
@@ -76,8 +77,12 @@ be multiplied
 - *"num_worker_tot"* - number of workers for one training for *"num_epochs"*
 - *"num_workers_paral"* - number of parallel workers. If *"num_workers_paral"* is 
 smaller than *"num_worker_tot"*, then in one training session *"num_workers_paral"* 
-run in parallel first and then the rest of the workers run in parallel
+run in parallel first and then the rest of the workers run in parallel. 
+*"num_workers_paral"* cannot be greater than *"num_worker_tot"*.
 
-Example of best hyperparameters search:
-![](https://github.com/victoriamazo/ptb/images/results.png)
-
+In the example of hyperparameter search below the search started with random initial 
+parameters (learning rate and keep dropout probability). Workers were trained for 50 epochs
+and after each epoch tests were performed. At the last epoch almost all workers 
+reached highest test accuracy. An interesting conclusion is that the best learning
+rate is around 0.001 and dropout probability value does not really matter.    
+![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "title-1") 

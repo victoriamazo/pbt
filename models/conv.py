@@ -28,7 +28,7 @@ class conv(nn.Module):
             current_dims = n_filter
 
         self.model = nn.Sequential(layers)
-        current_dims = self.n_filters[-1]*FLAGS.height*FLAGS.width #18432 #self.n_filters[-1] * FLAGS.height/2**len(self.n_filters) * FLAGS.height/2**len(self.n_filters) #18432
+        current_dims = self.n_filters[-1]*FLAGS.height*FLAGS.width
         self.classifier = nn.Sequential(nn.Linear(current_dims, self.num_classes))
         # print(self.features)
 
