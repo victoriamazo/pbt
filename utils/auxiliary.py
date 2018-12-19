@@ -194,7 +194,7 @@ def save_test_losses_to_tensorboard(test_iters_dict, results_table_path, writer=
                                 writer.add_scalar(col_name+'_{}'.format(woker_num),
                                                   results_table.iloc[row_idx][col_name], test_epoch)
                             else:
-                                writer.add_scalar(col_name,  results_table.iloc[row_idx][col_name], test_iter)
+                                writer.add_scalar(col_name, results_table.iloc[row_idx][col_name], test_iter)
 
         if os.path.isfile(results_table_path_tmp):
             os.remove(results_table_path_tmp)
