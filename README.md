@@ -16,6 +16,8 @@ Here PBT is applied to training an mnist classifier.
 - Python 3
 - PyTorch 0.3
 
+Training and testing were performed on Ununtu 16.04, Cuda 8.0 and two 1080Ti GPUs.
+
 ## Usage
 
 ### Downloads
