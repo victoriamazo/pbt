@@ -18,6 +18,8 @@ Here PBT is applied to training an mnist classifier.
 
 Training and testing were performed on Ununtu 16.04, Cuda 8.0 and two 1080Ti GPUs.
 
+
+
 ## Usage
 
 ### Downloads
@@ -85,6 +87,9 @@ be multiplied
 smaller than *"num_worker_tot"*, then in one training session *"num_workers_paral"* 
 run in parallel first and then the rest of the workers run in parallel. 
 *"num_workers_paral"* cannot be greater than *"num_worker_tot"*.
+
+
+## PBT Results
 
 In the example of hyperparameter search below (convolutional network) 
 the search started with random initial 
