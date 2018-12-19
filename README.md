@@ -91,4 +91,4 @@ rate is around 0.001 and dropout probability value does not really matter.
 ![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "title-1") 
 
 This is an example of a learning rate schedule vs. epochs.
-![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "title-1") 
+![alt-text-2](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "title-2") 
