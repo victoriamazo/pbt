@@ -2,6 +2,8 @@
 Main allows to run training and test as separate processes or train, test, val serially.
 Configuration should be specified in json file, given as an argument.
 Possible running multiple tests on ckpts given in a list or in a range.
+When running test it is recommended that args_test.json file is in a training directory,
+since arguments are uploaded from the file.
 
 Required to update bashrc (once):
             $ nano ~/.bashrc

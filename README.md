@@ -55,6 +55,8 @@ python3 main.py config/conv.json -m train
 ```
 To resume training, update in the config file *"load_ckpt"* (in the train section) with a full 
 path to a saved model.
+When running test it is recommended that args_test.json file is in a training directory,
+since arguments are uploaded from the file. 
 
 
 

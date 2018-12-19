@@ -1,6 +1,8 @@
 '''
 Main allows to run Population Based Training (PBT), where trainings and tests run as separate processes.
 Configuration should be specified in the config json file, given as an argument.
+When running test it is recommended that args_test.json file is in a training directory,
+since arguments are uploaded from the file.
 
 Required to update bashrc (once):
             $ nano ~/.bashrc
