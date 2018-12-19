@@ -1,7 +1,6 @@
 import os
 import imp
 import json
-import glob
 
 
 class Test(object):

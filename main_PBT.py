@@ -112,8 +112,8 @@ def run_one_epoch(PBT_params, PBT_params_worker, num_workers, config_train, conf
     w = 0
     for worker_loop_num in range(num_worker_loops):
         for worker_paral in range(num_workers_paral):
-            print('\nepoch_loop_num = {}, w = {}, worker_loop_num = {}, worker_paral = {}'.format(
-                epoch_loop_num, w, worker_loop_num, worker_paral))
+            print('\nepoch_loop_num = {}, w = {}, worker_loop_num = {}, worker_paral = {}'.format(epoch_loop_num, w,
+                                                                    worker_loop_num, worker_paral))
 
             if epoch_loop_num == 0:
                 # rand initial params

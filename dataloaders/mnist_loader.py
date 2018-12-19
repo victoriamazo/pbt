@@ -100,34 +100,7 @@ class mnist_loader(DataLoader):
 
 
 
-if __name__ == "__main__":
-    class FLAGS():
-        def __init__(self):
-            self.batch_size = 1
-            self.data_dir = '/media/victoria/d/data/mnist'
-            self.hflip = True
-            self.shuffle = True
-            self.height = 28
-            self.width = 28
-            self.num_classes = 10
 
-            self.debug = True
-
-    FLAGS = FLAGS()
-    mode = 'train'
-
-    # generate batch of stereo images
-    dataloader = mnist_loader(FLAGS, mode)
-    gen, num_samples = dataloader.build()
-    img1_trans, y, filename = gen.next()
-
-    # show images
-    idx = 0
-    print('img1_trans = {}, y = {}, filename = {}'.format(img1_trans.shape, y, filename))
-    im1 = Image.fromarray(img1_trans[idx])
-    im1_name = 'img1_trans_{}.png'.format(filename[idx])
-    im1.save('../debug/{}'.format(im1_name))
-    os.system('xdg-open ../debug/{}'.format(im1_name))
 
 
 

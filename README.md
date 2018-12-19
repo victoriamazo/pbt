@@ -25,11 +25,13 @@ git clone https://github.com/victoriamazo/pbt.git
 ```
 - Download [mnist dataset](https://drive.google.com/open?id=1_mOZwOuuMHF7Ihzrrb30RdAfgnOspHQN)
 - Download the best pretrained vanilla model with fully connected layers 
-[here](https://drive.google.com/open?id=1owLOz0mOvmKB64N05q6OVhwdVl4dn7YE) 
+[here](https://drive.google.com/open?id=17bDCJRXh8SSupTFdehI1qX5h1AYFD1ec) 
 - Download the best pretrained vanilla model with convolutional layers 
-[here](https://drive.google.com/open?id=1Qg2yXcNb07k2aAcRNaWygI8XJeSjMtxT)
-- Download a pretrained PBT model with fully connected layers  [here]()
-- Download a pretrained PBT model with convolutional layers  [here]()
+[here](https://drive.google.com/open?id=1OzW-Irh_LWbqYvSsDD5FZdvJvKI2-KYq)
+- Download a pretrained PBT model with fully connected layers 
+ [here](https://drive.google.com/open?id=1hlULxaPINOqpZoaTIKw83T3EUNdbipty)
+- Download a pretrained PBT model with convolutional layers  
+[here](https://drive.google.com/open?id=1TcTZr7IxCzarZ-tsV68tWSAhAZ8dul81)
 
 ### Vanilla 
 For a vanilla (without PBT) training and/or testing edit the parameters (*"data_dir", 
@@ -67,7 +69,6 @@ python3 main_PBT.py config/conv_PBT.json
 python3 main_PBT.py config/conv_PBT.json -m test
 ```
 
-
 Configuration parameters:
 - *"PBT_lr"* and *"PBT_keep_prob"* - hyperparameters starting with *PBT* are those,
     which are taken from best performing workers and mutated
@@ -81,9 +82,13 @@ smaller than *"num_worker_tot"*, then in one training session *"num_workers_para
 run in parallel first and then the rest of the workers run in parallel. 
 *"num_workers_paral"* cannot be greater than *"num_worker_tot"*.
 
-In the example of hyperparameter search below the search started with random initial 
+In the example of hyperparameter search below (convolutional network) 
+the search started with random initial 
 parameters (learning rate and keep dropout probability). Workers were trained for 50 epochs
 and after each epoch tests were performed. At the last epoch almost all workers 
 reached highest test accuracy. An interesting conclusion is that the best learning
 rate is around 0.001 and dropout probability value does not really matter.    
 ![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "title-1") 
+
+This is an example of a learning rate schedule vs. epochs.
+![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "title-1") 

@@ -36,7 +36,6 @@ os.environ["CUDA_DEVICE_ORDER"] = 'PCI_BUS_ID'
 os.environ["TF_ENABLE_WINOGRAD_NONFUSED"] = '1'
 from trains.train_builder import Train
 from tests.test_builder import Test
-from utils.visualization import results_visualization
 
 
 def getArgs():
@@ -171,9 +170,6 @@ def main(args=None):
             test_process.start()
             test_process.join()
 
-        # # compare and visualize results from all runs
-        results_visualization(root_dir)
-
     # run train/test serially
     elif mode == 'test' or mode == 'train' or mode == 'traintest' or mode == 'val':
         print('running {} serially'.format(mode))
@@ -182,8 +178,6 @@ def main(args=None):
         if mode == 'train' or mode == 'traintest':
             set_cuda_visible_gpus(config_train, 'train')
             Train.train_builder(Namespace(**config_train), )
-            # # compare and visualize results from all runs
-            results_visualization(root_dir)
 
         if mode == 'test' or mode == 'traintest':
             if 'gpus' in config_test:

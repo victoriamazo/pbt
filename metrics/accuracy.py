@@ -17,7 +17,6 @@ class accuracy_onehot(Metric):
 
 
 
-
 class accuracy_categ(Metric):
     def __init__(self, x, y, FLAGS):
         super(accuracy_categ, self).__init__(x, y, FLAGS)

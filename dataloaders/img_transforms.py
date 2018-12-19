@@ -1,5 +1,3 @@
-# TODO: to implement rotation and color augmentation
-
 import numbers
 import random
 from PIL import Image, ImageOps

@@ -2,6 +2,8 @@ import os
 from tensorboardX import SummaryWriter                                 # pip install tensorboardX
 from itertools import chain
 import numpy as np
+from path import Path
+import time
 
 from dataloaders.dataloader_builder import DataLoader
 from trains.train_builder import Train
@@ -33,14 +35,16 @@ class train_MPL(Train):
         self.test_iters_dict = {}
         self.debug = FLAGS.debug
         save_path = os.path.join('tensorboard', self.train_dir.split('/')[-1])
-        self.writer = SummaryWriter(save_path)
         if self.worker_num != None:
             self.n_epoch = FLAGS.n_epoch
             self.results_table_path = os.path.join(self.train_dir, 'results_{}.csv'.format(self.worker_num))
             self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary_{}.csv'.format(self.worker_num))
+            subdir_path = Path(save_path) / str(time.strftime('%M-%S', time.localtime(time.time())))
+            self.writer = SummaryWriter(subdir_path)
         else:
             self.results_table_path = os.path.join(self.train_dir, 'results.csv')
             self.loss_summary_path = os.path.join(self.train_dir, 'loss_summary.csv')
+            self.writer = SummaryWriter(save_path)
 
         # seed
         if hasattr(FLAGS, 'seed'):
@@ -116,8 +120,10 @@ class train_MPL(Train):
         self._check_args()
 
         # initialize or resume training
-        _, models, _, self.n_iter, self.n_epoch = load_model_and_weights(self.load_ckpt, self.FLAGS, use_cuda,
+        _, models, _, self.n_iter, epoch = load_model_and_weights(self.load_ckpt, self.FLAGS, use_cuda,
                                                                         model=self.model, worker_num=self.worker_num)
+        if self.worker_num == None:
+            self.n_epoch = epoch
         model = models[0]
 
         # run in parallel on several GPUs
@@ -130,13 +136,16 @@ class train_MPL(Train):
         optimizer = torch.optim.Adam(parameters, self.lr, betas=(0.9, 0.999), weight_decay=self.weight_decay)
 
         # run training for n epochs
-        for epoch in range(self.n_epoch, self.num_epochs, 1):
+        min_epoch = 0
+        if self.worker_num == None:
+            min_epoch = self.n_epoch
+        for epoch in range(min_epoch, self.num_epochs, 1):
             if self.worker_num == None:
                 self.n_epoch = epoch
-            if self.n_epoch in self.decreasing_lr_epochs and self.worker_num != None:
-                idx = self.decreasing_lr_epochs.index(self.n_epoch) + 1
-                self.lr /= 2**idx
-                print('learning rate decreases by {} at epoch {}'.format(2**idx, self.n_epoch))
+                if self.n_epoch in self.decreasing_lr_epochs and self.worker_num != None:
+                    idx = self.decreasing_lr_epochs.index(self.n_epoch) + 1
+                    self.lr /= 2**idx
+                    print('learning rate decreases by {} at epoch {}'.format(2**idx, self.n_epoch))
 
             # run training for one epoch
             train_loss = self._train_one_epoch(model, optimizer)
