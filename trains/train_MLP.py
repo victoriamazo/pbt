@@ -140,7 +140,8 @@ class train_MPL(Train):
         for epoch in range(min_epoch, self.num_epochs, 1):
             if self.worker_num == None:
                 self.n_epoch = epoch
-                if self.n_epoch in self.decreasing_lr_epochs and self.worker_num != None:
+                if len(self.decreasing_lr_epochs) > 0 and (self.n_epoch in self.decreasing_lr_epochs) \
+                        and self.worker_num != None:
                     idx = self.decreasing_lr_epochs.index(self.n_epoch) + 1
                     self.lr /= 2**idx
                     print('learning rate decreases by {} at epoch {}'.format(2**idx, self.n_epoch))
