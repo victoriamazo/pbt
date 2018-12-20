@@ -10,7 +10,7 @@ Examples:
 * tests:
     config/conv_PBT.json -m test
 
-By adding '--debug', no tensorboard and other writer will start (for debug mode)
+By adding '--debug', no tensorboard will start
 '''
 
 
