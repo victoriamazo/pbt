@@ -42,7 +42,7 @@ For a vanilla (without PBT) training and/or testing edit the parameters (*"data_
 "train_dir"*, etc.) in the corresponding config file (*config/fc.json* for a 
 fully-connected and *config/conv.json* for a convolutional network) 
 and run
-- training and testing as parallel threads
+- training and testing as parallel threads (test runs every _sleep_time_sec_ seconds)
 ```
 python3 main.py config/conv.json 
 ```
@@ -66,7 +66,7 @@ since arguments are uploaded from the file.
 For a PBT training and testing edit the parameters (*"data_dir", "train_dir"*,etc.)
 in the corresponding config file (*config/fc_PBT.json* for a 
 fully-connected and *config/conv_PBT.json* for a convolutional network) and run
-- training and testing as parallel threads
+- training and testing as parallel threads (test runs every _sleep_time_sec_ seconds)
 ```
 python3 main_PBT.py config/conv_PBT.json 
 ```
