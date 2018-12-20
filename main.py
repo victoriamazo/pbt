@@ -13,7 +13,7 @@ Examples:
     config/conv.json -m test
     config/conv.json -m traintest
 
-By adding '--debug', no tensorboard and other writer will start (for debug mode)
+By adding '--debug', no tensorboard will start (in debug mode)
 '''
 
 
