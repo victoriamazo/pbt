@@ -5,23 +5,15 @@ Possible running multiple tests on ckpts given in a list or in a range.
 When running test it is recommended that args_test.json file is in a training directory,
 since arguments are uploaded from the file.
 
-Required to update bashrc (once):
-            $ nano ~/.bashrc
-            $ export CUDA_DEVICE_ORDER=PCI_BUS_ID
-            $cd ~  $source ~/.bashrc
+Examples:
+* train and test as separate processes:
+    config/mnist.json
+* serially:
+    config/conv.json -m train
+    config/conv.json -m test
+    config/conv.json -m traintest
 
-Example:
-train and test as separate processes:
-config/mnist.json
-
-serially:
-config/poseest/EuRoc_MAV.json -m train
-or
-config/densenet_rnn_test.json -m test
-or
-config/densenet_rnn_85.json -m traintest
-
-by adding '--debug', no tensorboard and other writer will start (for debug mode)
+By adding '--debug', no tensorboard and other writer will start (for debug mode)
 '''
 
 

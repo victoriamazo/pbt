@@ -4,16 +4,13 @@ Configuration should be specified in the config json file, given as an argument.
 When running test it is recommended that args_test.json file is in a training directory,
 since arguments are uploaded from the file.
 
-Required to update bashrc (once):
-            $ nano ~/.bashrc
-            $ export CUDA_DEVICE_ORDER=PCI_BUS_ID
-            $cd ~  $source ~/.bashrc
+Examples:
+* trains and tests (PBT):
+    config/conv_PBT.json
+* tests:
+    config/conv_PBT.json -m test
 
-Example:
-trains and tests (PBT):
-config/mnist/test_PBT.json
-
-by adding '--debug', no tensorboard and other writer will start (for debug mode)
+By adding '--debug', no tensorboard and other writer will start (for debug mode)
 '''
 
 
