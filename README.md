@@ -37,17 +37,16 @@ git clone https://github.com/victoriamazo/pbt.git
 - Download a pretrained convolutional model trained with PTB 
 [here](https://drive.google.com/open?id=1TcTZr7IxCzarZ-tsV68tWSAhAZ8dul81)
 
+
 ### Vanilla 
-For a vanilla (without PBT) training and/or testing edit the parameters (*"data_dir", 
-"train_dir"*, etc.) in the corresponding config file (*config/fc.json* for a 
-fully-connected and *config/conv.json* for a convolutional network) 
+For a vanilla (without PBT) training and/or testing edit the config file 
+(*config/fc.json* for a fully-connected and *config/conv.json* for a convolutional network) 
 and run
-- training and testing as parallel threads (test runs every _sleep_time_sec_ seconds)
+- training and testing as parallel threads 
 ```
 python3 main.py config/conv.json 
 ```
-- testing (update in the config file *"load_ckpt"* (in the test section) with a 
-full path to a saved model)
+- testing
 ```
 python3 main.py config/conv.json -m test
 ```
@@ -55,27 +54,45 @@ python3 main.py config/conv.json -m test
 ```
 python3 main.py config/conv.json -m train
 ```
-To resume training, update in the config file *"load_ckpt"* (in the train section) with a full 
-path to a saved model.
 When running test it is recommended that args_test.json file is in a training directory,
 since arguments are uploaded from the file. 
 
+Configuration parameters 
+
+- _data_dir_ - full path to the root of a data directory
+- _train_dir_ - full path to a training directory (is created if does not exist) 
+- _model_ - name of a network ("conv" or "fc")
+- _metric_ - test metric, e.g. "accuracy_categ",
+- _n_filters_ - number of layers and filters in those layers in a convolutional network, 
+e.g. "16,32"
+- _n_hiddens_ - number of layers and their size in a fully connected network, 
+e.g. "256,256"
+- _version_ - version of a train ("train_unsup") and test ("test_depth") scripts
+- _gpus_ - either one or several GPUs for running train/test, e.g. "0,1"
+- _lr_ - learning rate
+- _decreasing_lr_epochs_ - list of epochs to decrease learning rate by 2, e.g. "15,30,45"
+- _num_epochs_ - number of epochs for training 
+- _num_iters_for_ckpt_ - number of iterations to save a checkpoint
+- _load_ckpt_ - full path to a saved model to resume training / run a test
+- _keep_prob_ - 1-dropout probability
+- _weight_decay_ - weight decay for training 
+- _sleep_time_sec_ - waiting time for running a test (in sec) in a train/test paralellel mode 
 
 
 ### PBT 
-For a PBT training and testing edit the parameters (*"data_dir", "train_dir"*,etc.)
-in the corresponding config file (*config/fc_PBT.json* for a 
-fully-connected and *config/conv_PBT.json* for a convolutional network) and run
-- training and testing as parallel threads (test runs every _sleep_time_sec_ seconds)
+For a PBT training and testing edit the corresponding config file 
+(*config/fc_PBT.json* for a fully-connected and *config/conv_PBT.json* for a 
+convolutional network) and run
+- training and testing as parallel threads 
 ```
 python3 main_PBT.py config/conv_PBT.json 
 ```
-- testing (update in the config file *"load_ckpt"* (in the test section) with a full path to a saved model)
+- testing 
 ```
 python3 main_PBT.py config/conv_PBT.json -m test
 ```
 
-Configuration parameters:
+Additional configuration parameters:
 - *"PBT_lr"* and *"PBT_keep_prob"* - hyperparameters starting with *PBT* are those,
     which are taken from best performing workers and mutated
 - *"mutation"* - are coefficients by which the mutated hyperparameters are 
