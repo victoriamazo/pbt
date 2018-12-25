@@ -57,7 +57,7 @@ python3 main.py config/conv.json -m train
 When running test it is recommended that args_test.json file is in a training directory,
 since arguments are uploaded from the file. 
 
-Configuration parameters 
+Configuration parameters: 
 
 - _data_dir_ - full path to the root of a data directory
 - _train_dir_ - full path to a training directory (is created if does not exist) 
@@ -114,7 +114,7 @@ parameters (learning rate and keep dropout probability). Workers were trained fo
 and after each epoch tests were performed. At the last epoch almost all workers 
 reached highest test accuracy. An interesting conclusion is that the best learning
 rate is around 0.001 and dropout probability value does not really matter.    
-![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "title-1") 
+![alt-text-1](https://github.com/victoriamazo/pbt/blob/master/images/results.png "PBT test accuracy") 
 
 This is an example of a learning rate schedule (of one worker) vs. epochs.
-![alt-text-2](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "title-2") 
+![alt-text-2](https://github.com/victoriamazo/pbt/blob/master/images/lr.png "Learning rate") 
