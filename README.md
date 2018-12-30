@@ -40,9 +40,8 @@ git clone https://github.com/victoriamazo/pbt.git
 
 ### Vanilla 
 For a vanilla (without PBT) training and/or testing edit the config file 
-(*config/fc.json* for a fully-connected and *config/conv.json* for a convolutional network) 
-and run ( (all configuration parameters are 
-explained in "config/config_params.md"))
+(*config/fc.json* for a fully-connected and *config/conv.json* for a convolutional network, all configuration parameters are 
+explained in "config/config_params.md") and run
 - training and testing as parallel threads 
 ```
 python3 main.py config/conv.json 
